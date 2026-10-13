@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reserva de Puestos · Piso 9</title>
+<style>
+:root{--navy:#0b2a5b;--blue:#1f6feb;--bg:#f1f5fb;--card:#fff;--tx:#0f1f3d;--mu:#64748b;--ln:#e5eaf2}
+*{box-sizing:border-box;margin:0}body{font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--tx);display:flex;height:100vh;overflow:hidden}
+svg.ic{flex-shrink:0}
+aside{width:250px;background:linear-gradient(180deg,#0b2a5b,#071c40);color:#fff;padding:22px 14px;display:flex;flex-direction:column;flex-shrink:0}
+.logo{padding:0 8px 22px;display:flex;gap:12px;align-items:center}.logo b{font-size:18px;display:block}.logo small{opacity:.7}
+nav a{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:10px;color:#dbe6ff;text-decoration:none;font-size:15px;margin-bottom:6px;cursor:pointer}
+nav a.on{background:var(--blue);color:#fff}nav a:hover:not(.on){background:#ffffff1a}
+.sp{flex:1}.foot{text-align:center;font-size:13px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:4px}.foot .g{color:#4ade80}
+main{flex:1;display:flex;flex-direction:column;min-width:0}
+header{height:70px;background:#fff;display:flex;align-items:center;justify-content:flex-end;gap:22px;padding:0 28px;border-bottom:1px solid var(--ln)}
+.dl{display:flex;align-items:center;gap:8px;color:var(--mu)}
+header input[type=date]{border:1px solid var(--ln);border-radius:10px;padding:8px 12px;font:inherit}
+.user{display:flex;align-items:center;gap:10px;font-size:14px}.av{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:700}
+#view{flex:1;overflow:auto;padding:22px 26px}
+.card{background:var(--card);border-radius:16px;box-shadow:0 2px 10px #0b2a5b14;padding:18px}
+h2{font-size:22px;margin-bottom:14px}h3{font-size:18px;margin-bottom:12px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+.kpi{display:flex;gap:14px;align-items:center}.kpi .ic{width:48px;height:48px;border-radius:12px;display:grid;place-items:center}
+.kpi b{font-size:30px;display:block}.kpi span{font-size:13px;color:var(--mu)}
+.grid{display:grid;grid-template-columns:1fr 340px;gap:18px}
+.tools{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.tools button,.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--ln);background:#fff;border-radius:10px;padding:9px 14px;font:inherit;cursor:pointer;color:var(--tx)}
+.tools button.on,.btn.p{background:var(--blue);color:#fff;border-color:var(--blue)}.btn.p{padding:11px 16px;font-weight:600}
+.btn.d{color:#c62828;border-color:#f3c1c1}
+
+/* Contenedor del plano: muestra la imagen completa */
+.vp {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #d9dde3;
+  touch-action: none;
+  cursor: grab;
+  min-height: 320px;
+}
+
+/* Conserva la proporción original de la imagen */
+.tilt {
+  position: relative;
+  width: 100%;
+  transform-origin: center center;
+  transition: transform 0.4s ease;
+}
+
+.stage {
+  position: relative;
+  width: 100%;
+  transform-origin: 0 0;
+  --k: 1;
+}
+
+.stage img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Vista 3D sin exagerar la inclinación */
+.v3d .tilt {
+  transform: perspective(1800px) rotateX(12deg) scale(0.98);
+}
+
+/* Evita que el mapa y los controles se salgan de la tarjeta */
+#view {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 22px 26px;
+}
+
+#view .card {
+  min-width: 0;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 700px) {
+  #view {
+    padding: 12px;
+  }
+
+  .vp {
+    min-height: 280px;
+  }
+
+  .tools button {
+    padding: 8px 10px;
+  }
+}
+
+.ch{position:absolute;width:calc(26px*var(--k));height:calc(26px*var(--k));border-radius:50%;border:calc(2.5px*var(--k)) solid #fff;transform:translate(-50%,-50%);cursor:pointer;box-shadow:0 2px 6px #0006;transition:opacity .4s,box-shadow .2s;padding:0}
+.ch:hover{box-shadow:0 0 0 calc(5px*var(--k)) #1f6feb77}.ch.dim{opacity:.12;pointer-events:none}
+.ch.dis{background:#22a06b}.ch.res{background:#f5b301}.ch.ocu{background:#e5372e}.ch.mant{background:#9aa3b2}.ch.mine{background:#2563eb;box-shadow:0 0 0 calc(4px*var(--k)) #2563eb55}
+.lb{position:absolute;transform:translate(-50%,-50%) scale(var(--k));background:var(--navy);color:#fff;font-size:13px;padding:5px 12px;border-radius:7px;white-space:nowrap;cursor:pointer;border:0;transition:opacity .4s}
+.lb.dim{opacity:.2}.lb.act{background:var(--blue)}
+.banner{position:absolute;left:12px;top:12px;background:#fff;border-radius:12px;padding:10px 14px;box-shadow:0 4px 14px #0003;font-size:14px;display:none;z-index:3;align-items:center;gap:12px}
+.legend{display:flex;gap:20px;font-size:13px;margin-top:12px;flex-wrap:wrap}.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px}
+.donut{display:flex;gap:16px;align-items:center}.dn{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;flex-shrink:0}
+.dn span{width:68px;height:68px;border-radius:50%;background:#fff;display:grid;place-items:center;font-weight:700;font-size:20px}
+.dep{padding:10px 8px;border-radius:10px;cursor:pointer;border-bottom:1px solid var(--ln)}.dep:hover,.dep.act{background:#eaf1ff}
+.dep .r{display:flex;justify-content:space-between;font-size:14px}.dep small{color:var(--mu)}
+.bar{height:6px;background:#e8edf5;border-radius:4px;margin-top:6px;overflow:hidden}.bar i{display:block;height:100%}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:8px}
+.info{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px;font-size:14px}
+.info>div{display:flex;gap:10px;align-items:center}.info svg{color:var(--blue)}.info b{display:block}.info span{color:var(--mu);font-size:13px}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px;border:1px solid var(--ln);border-radius:12px;background:#fff}
+.item b{display:block}.item small{color:var(--mu)}.item.click{cursor:pointer}.item.click:hover{border-color:var(--blue)}
+select,.in{border:1px solid var(--ln);border-radius:10px;padding:9px 12px;font:inherit}
+.sbox{position:relative;margin-bottom:8px}.sbox svg{position:absolute;left:11px;top:11px;color:var(--mu)}.sbox .in{width:100%;padding-left:36px}
+.modal{position:fixed;inset:0;background:#0b1f4580;display:none;place-items:center;z-index:10}
+.modal.show{display:grid}.mb{background:#fff;border-radius:18px;padding:26px;width:min(400px,92vw)}
+.mb p{margin:8px 0;color:var(--mu);display:flex;align-items:center;gap:8px}.mb .row{display:flex;gap:10px;margin-top:18px}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;color:#fff}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:10px;z-index:20;display:none}
+table{width:100%;border-collapse:collapse}td,th{padding:10px;text-align:left;border-bottom:1px solid var(--ln);font-size:14px}
+@media(max-width:1000px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}aside{width:70px}aside span,.logo div,.foot{display:none}}
+</style></head>
+<body>
+<aside>
+ <div class="logo" data-i="building" data-s="30"><div><b>Reserva de Puestos</b><small>Trabajo híbrido · Piso 9</small></div></div>
+ <nav id="nav">
+  <a data-v="inicio" data-i="home"><span>Inicio</span></a><a data-v="mapa" data-i="map"><span>Mapa de la oficina</span></a>
+  <a data-v="reservas" data-i="cal"><span>Mis reservas</span></a><a data-v="puesto" data-i="search"><span>Buscar puesto</span></a>
+  <a data-v="depto" data-i="users"><span>Buscar departamento</span></a><a data-v="reportes" data-i="chart"><span>Reportes</span></a>
+ </nav><div class="sp"></div>
+ <nav><a data-v="config" data-i="cog"><span>Configuración</span></a></nav>
+ <div class="foot" data-i="building" data-s="34"><b>Oficina Piso 9</b><span><span class="g">●</span> Trabajo presencial, juntos.</span></div>
+</aside>
+<main>
+ <header><label class="dl" data-i="cal"><input type="date" id="date"></label>
+  <div class="user"><div class="av" id="av">J</div><div><b id="uname">Juan Pérez</b><br><small style="color:#64748b">Empleado</small></div></div></header>
+ <div id="view"></div>
+</main>
+<div class="modal" id="modal"><div class="mb" id="mb"></div></div><div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+/* ---------- ICONOS (SVG) ---------- */
+const IC={
+home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+map:'<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>',
+cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+cog:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+building:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/>',
+check:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+chair:'<path d="M6 10V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5"/><path d="M4 12a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5H4z"/><line x1="6" y1="17" x2="6" y2="21"/><line x1="18" y1="17" x2="18" y2="21"/>',
+pin:'<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+cube:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+layout:'<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>',
+expand:'<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>',
+minus:'<line x1="5" y1="12" x2="19" y2="12"/>',plus:'<line x1="12" y1="5" x2="12" y2="19"/>'};
+const I=(n,s=18)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[n]}</svg>`;
+document.querySelectorAll('[data-i]').forEach(e=>e.insertAdjacentHTML('afterbegin',I(e.dataset.i,+e.dataset.s||20)));
+
+const IMG='plano3d.png',W0=1586,H0=992;
+const D={TE:['Tecnología','#10b981',[470,685]],FI:['Finanzas','#3b82f6',[1335,130]],CO:['Comercial','#8b5cf6',[760,700]],
+ AD:['Administrativo','#f59e0b',[1250,300]],TH:['Talento Humano','#ec4899',[1120,135]],GE:['Gerencia','#14b8a6',[120,60]]};
+// Solo sillas rojas del plano: [x,y] en píxeles de la imagen
+const P={TE:[[374,762],[422,766],[374,800],[422,802],[374,838],[422,840],[547,752],[545,790],[545,853],[623,722],[623,775],[623,838]],
+ FI:[[1307,62],[1366,62],[1365,90],[1311,102]],CO:[[808,745],[792,866],[717,737],[717,800],[717,862]],
+ AD:[[1266,322],[1292,322],[1317,322],[1189,350],[1190,382]],TH:[[1067,76],[1094,80],[1177,72],[1177,100],[1143,100]],GE:[]};
+const C=[];for(const k in P)P[k].forEach((p,i)=>C.push({id:k+'-'+String(i+1).padStart(2,'0'),d:k,x:p[0],y:p[1]}));
+const ST={dis:['Disponible','#22a06b'],res:['Reservado','#f5b301'],ocu:['Ocupado','#e5372e'],mant:['Mantenimiento','#9aa3b2'],mine:['Tu reserva','#2563eb']};
+const lsget=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
+let S=lsget('rp_res',{}),USER=lsget('rp_user','Juan Pérez');
+const save=()=>{try{localStorage.setItem('rp_res',JSON.stringify(S));localStorage.setItem('rp_user',JSON.stringify(USER))}catch(e){}};
+const today=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+let date=today(),view='inicio',SEL=null,V={s:1,x:0,y:0},mode='sup',Q='';
+const fd=d=>new Date(d+'T12:00').toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+function st(c,d=date){if(S[d+'|'+c.id])return'mine';if(c.id==='TE-12')return'mant';
+ let h=0;for(const ch of c.id+d)h=(h*31+ch.charCodeAt(0))%997;
+ if(h%7==0)return d===today()?'ocu':'res';if(h%7==1)return'res';return'dis'}
+function stats(list=C){const r={dis:0,res:0,ocu:0,mant:0,mine:0};list.forEach(c=>r[st(c)]++);return r}
+const used=r=>r.res+r.ocu+r.mine;
+const byD=k=>C.filter(c=>c.d===k);
+
+
+/* ---------- MAPA ---------- */
+
+function mapHTML() {
+  return `
+    <div class="card">
+      <div class="tools">
+        <button id="b3" class="${mode === '3d' ? 'on' : ''}">
+          ${I('cube')} Vista 3D
+        </button>
+
+        <button id="bs" class="${mode === 'sup' ? 'on' : ''}">
+          ${I('layout')} Vista superior
+        </button>
+
+        <select id="msel">
+          <option value="">Todos los departamentos</option>
+          ${Object.keys(D).map(k => `
+            <option value="${k}" ${SEL === k ? 'selected' : ''}>
+              ${D[k][0]}
+            </option>
+          `).join('')}
+        </select>
+
+        <span style="flex:1"></span>
+
+        <button id="zo" title="Alejar">${I('minus')}</button>
+        <b id="zl" style="min-width:48px;text-align:center">100%</b>
+        <button id="zi" title="Acercar">${I('plus')}</button>
+        <button id="zf" title="Ver todo el piso">${I('expand')}</button>
+      </div>
+
+      <div class="vp ${mode === '3d' ? 'v3d' : ''}" id="vp">
+        <div class="banner" id="bn"></div>
+
+        <div class="tilt" id="tilt">
+          <div class="stage" id="stage">
+            <img src="${IMG}" alt="Plano del piso 9">
+            <div id="lay"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        ${['dis', 'res', 'ocu', 'mant', 'mine'].map(k => `
+          <span>
+            <i style="background:${ST[k][1]}"></i>
+            ${ST[k][0]}
+          </span>
+        `).join('')}
+      </div>
+
+      <p style="font-size:13px;color:var(--mu);margin-top:8px">
+        Selecciona un departamento para acercarte y después selecciona
+        una silla para reservar el ${fd(date)}.
+      </p>
+    </div>
+  `;
+}
+
+function paint() {
+  const lay = $('#lay');
+  if (!lay) return;
+
+  lay.innerHTML =
+    Object.keys(D).map(k => `
+      <button
+        class="lb ${SEL && SEL !== k ? 'dim' : ''} ${SEL === k ? 'act' : ''}"
+        data-d="${k}"
+        style="
+          left:${D[k][2][0] / W0 * 100}%;
+          top:${D[k][2][1] / H0 * 100}%;
+        "
+      >${D[k][0]}</button>
+    `).join('') +
+
+    C.map(c => `
+      <button
+        class="ch ${st(c)} ${SEL && SEL !== c.d ? 'dim' : ''}"
+        data-c="${c.id}"
+        title="${c.id}"
+        aria-label="Puesto ${c.id}"
+        style="
+          left:${c.x / W0 * 100}%;
+          top:${c.y / H0 * 100}%;
+        "
+      ></button>
+    `).join('');
+
+  lay.querySelectorAll('.lb').forEach(b => {
+    b.onclick = e => {
+      e.stopPropagation();
+      pick(b.dataset.d);
+    };
+  });
+
+  lay.querySelectorAll('.ch').forEach(b => {
+    b.onclick = e => {
+      e.stopPropagation();
+
+      if (!moved) {
+        openChair(b.dataset.c);
+      }
+    };
+  });
+
+  const bn = $('#bn');
+
+  if (SEL && bn) {
+    const r = stats(byD(SEL));
+    const n = byD(SEL).length;
+
+    bn.style.display = 'flex';
+
+    bn.innerHTML = `
+      <div>
+        <b>${D[SEL][0]}</b><br>
+        <small>
+          ${n ? `${r.dis} disponibles de ${n} puestos` : 'Sin puestos habilitados'}
+        </small>
+      </div>
+
+      <button class="btn" id="all">Ver todo el piso</button>
+    `;
+
+    $('#all').onclick = () => pick(null);
+  } else if (bn) {
+    bn.style.display = 'none';
+  }
+}
+
+/* ---------- TRANSFORMACIÓN Y ZOOM ---------- */
+
+function apply(anim = true) {
+  const stage = $('#stage');
+  if (!stage) return;
+
+  stage.style.transition = anim
+    ? 'transform .35s ease'
+    : 'none';
+
+  stage.style.transform =
+    `translate(${V.x}px, ${V.y}px) scale(${V.s})`;
+
+  stage.style.setProperty(
+    '--k',
+    (1 / Math.sqrt(V.s)).toFixed(3)
+  );
+
+  const zl = $('#zl');
+  if (zl) {
+    zl.textContent = `${Math.round(V.s * 100)}%`;
+  }
+}
+
+/* Ajusta la altura del contenedor al tamaño real del plano. */
+function size() {
+  const vp = $('#vp');
+  const stage = $('#stage');
+  const img = stage?.querySelector('img');
+
+  if (!vp || !stage || !img) return;
+
+  const width = vp.clientWidth;
+  if (!width) return;
+
+  const height = width * H0 / W0;
+
+  stage.style.width = `${width}px`;
+  stage.style.height = `${height}px`;
+
+  img.style.width = '100%';
+  img.style.height = '100%';
+  img.style.objectFit = 'fill';
+
+  vp.style.height = `${height}px`;
+  vp.style.minHeight = '0';
+}
+
+function fit(anim = true) {
+  V = {
+    s: 1,
+    x: 0,
+    y: 0
+  };
+
+  apply(anim);
+}
+
+/* Centra el departamento seleccionado sin cortar sus puestos. */
+function zoomTo(k, anim = true) {
+  const vp = $('#vp');
+  if (!vp || !k) return;
+
+  const width = vp.clientWidth;
+  const height = vp.clientHeight;
+  const factor = width / W0;
+
+  const list = byD(k);
+
+  let x0, y0, x1, y1;
+
+  if (list.length) {
+    x0 = Math.min(...list.map(c => c.x));
+    x1 = Math.max(...list.map(c => c.x));
+    y0 = Math.min(...list.map(c => c.y));
+    y1 = Math.max(...list.map(c => c.y));
+  } else {
+    const point = D[k][2];
+
+    x0 = point[0] - 120;
+    x1 = point[0] + 120;
+    y0 = point[1] - 80;
+    y1 = point[1] + 160;
+  }
+
+  const padding = 100;
+
+  x0 = Math.max(0, x0 - padding);
+  y0 = Math.max(0, y0 - padding);
+
+  x1 = Math.min(W0, x1 + padding);
+  y1 = Math.min(H0, y1 + padding);
+
+  const boxWidth = Math.max(1, (x1 - x0) * factor);
+  const boxHeight = Math.max(1, (y1 - y0) * factor);
+
+  const zoom = Math.min(
+    4,
+    Math.max(
+      1,
+      Math.min(
+        width / boxWidth,
+        height / boxHeight
+      )
+    )
+  );
+
+  V.s = zoom;
+
+  V.x = width / 2 -
+    ((x0 + x1) / 2) * factor * zoom;
+
+  V.y = height / 2 -
+    ((y0 + y1) / 2) * factor * zoom;
+
+  clampV();
+  apply(anim);
+}
+
+/* Evita que el plano pueda arrastrarse fuera de sus límites. */
+function clampV() {
+  const vp = $('#vp');
+  if (!vp) return;
+
+  const width = vp.clientWidth;
+  const height = vp.clientHeight;
+
+  const imageHeight = width * H0 / W0;
+  const scaledWidth = width * V.s;
+  const scaledHeight = imageHeight * V.s;
+
+  V.x = Math.min(
+    0,
+    Math.max(width - scaledWidth, V.x)
+  );
+
+  V.y = Math.min(
+    0,
+    Math.max(height - scaledHeight, V.y)
+  );
+}
+
+function pick(k) {
+  SEL = k || null;
+
+  const select = $('#msel');
+  if (select) {
+    select.value = SEL || '';
+  }
+
+  paint();
+
+  if (SEL) {
+    zoomTo(SEL);
+  } else {
+    fit(true);
+  }
+
+  if (view === 'inicio') {
+    paintDeps();
+  }
+}
+
+function zoomBy(factor) {
+  const vp = $('#vp');
+  if (!vp) return;
+
+  const cx = vp.clientWidth / 2;
+  const cy = vp.clientHeight / 2;
+
+  const nextScale = Math.min(
+    5,
+    Math.max(1, V.s * factor)
+  );
+
+  V.x = cx - (cx - V.x) * nextScale / V.s;
+  V.y = cy - (cy - V.y) * nextScale / V.s;
+  V.s = nextScale;
+
+  clampV();
+  apply(true);
+}
+
+let moved = false;
+
+/* ---------- INICIALIZACIÓN DEL MAPA ---------- */
+
+function initMap() {
+  const vp = $('#vp');
+  const stage = $('#stage');
+
+  if (!vp || !stage) return;
+
+  size();
+  paint();
+
+  if (SEL) {
+    zoomTo(SEL, false);
+  } else {
+    fit(false);
+  }
+
+  $('#b3').onclick = () => {
+    mode = '3d';
+
+    vp.classList.add('v3d');
+    $('#b3').classList.add('on');
+    $('#bs').classList.remove('on');
+  };
+
+  $('#bs').onclick = () => {
+    mode = 'sup';
+
+    vp.classList.remove('v3d');
+    $('#bs').classList.add('on');
+    $('#b3').classList.remove('on');
+  };
+
+  $('#msel').onchange = e => {
+    pick(e.target.value);
+  };
+
+  $('#zi').onclick = () => zoomBy(1.4);
+  $('#zo').onclick = () => zoomBy(1 / 1.4);
+  $('#zf').onclick = () => pick(null);
+
+  let drag = null;
+
+  vp.onpointerdown = e => {
+    if (e.target.closest('button')) return;
+
+    drag = {
+      x: e.clientX,
+      y: e.clientY,
+      vx: V.x,
+      vy: V.y
+    };
+
+    moved = false;
+    vp.style.cursor = 'grabbing';
+
+    if (V.s > 1) {
+      vp.setPointerCapture?.(e.pointerId);
+    }
+  };
+
+  vp.onpointermove = e => {
+    if (!drag || V.s <= 1) return;
+
+    const dx = e.clientX - drag.x;
+    const dy = e.clientY - drag.y;
+
+    if (Math.abs(dx) + Math.abs(dy) > 5) {
+      moved = true;
+    }
+
+    if (moved) {
+      V.x = drag.vx + dx;
+      V.y = drag.vy + dy;
+
+      clampV();
+      apply(false);
+    }
+  };
+
+  const stopDrag = () => {
+    drag = null;
+    vp.style.cursor = 'grab';
+
+    setTimeout(() => {
+      moved = false;
+    }, 50);
+  };
+
+  vp.onpointerup = stopDrag;
+  vp.onpointercancel = stopDrag;
+}
+
+/* Recalcula el mapa cuando cambia el tamaño de la ventana. */
+window.onresize = () => {
+  const vp = $('#vp');
+
+  if (!vp) return;
+
+  size();
+
+  if (SEL) {
+    zoomTo(SEL, false);
+  } else {
+    fit(false);
+  }
+};
+
+/* ---------- MODAL DE RESERVAS ---------- */
+
+function openChair(id) {
+  const c = C.find(x => x.id === id);
+  if (!c) return;
+
+  const s = st(c);
+  const mine = s === 'mine';
+  const can = s === 'dis';
+
+  $('#mb').innerHTML = `
+    <h3>Puesto ${c.id}</h3>
+
+    <p>${I('pin')} ${D[c.d][0]} · Piso 9</p>
+    <p>${I('cal')} ${fd(date)}</p>
+
+    <p>
+      <span class="tag" style="background:${ST[s][1]}">
+        ${ST[s][0]}
+      </span>
+    </p>
+
+    ${
+      s === 'res' || s === 'ocu'
+        ? '<p>Este puesto no está disponible para esta fecha.</p>'
+        : ''
+    }
+
+    ${
+      s === 'mant'
+        ? '<p>Puesto en mantenimiento.</p>'
+        : ''
+    }
+
+    <div class="row">
+      ${
+        can
+          ? '<button class="btn p" id="go">Reservar este puesto</button>'
+          : ''
+      }
+
+      ${
+        mine
+          ? '<button class="btn d" id="cx">Cancelar reserva</button>'
+          : ''
+      }
+
+      <button class="btn" id="cl">Cerrar</button>
+    </div>
+  `;
+
+  $('#modal').classList.add('show');
+  $('#cl').onclick = closeM;
+
+  if (can) {
+    $('#go').onclick = () => {
+      S[date + '|' + id] = true;
+
+      save();
+      closeM();
+
+      toast('Reservaste ' + id + ' para el ' + fd(date));
+      render(true);
+    };
+  }
+
+  if (mine) {
+    $('#cx').onclick = () => {
+      delete S[date + '|' + id];
+
+      save();
+      closeM();
+
+      toast('Reserva cancelada');
+      render(true);
+    };
+  }
+}
+
+const closeM = () => {
+  $('#modal').classList.remove('show');
+};
+
+$('#modal').onclick = e => {
+  if (e.target.id === 'modal') {
+    closeM();
+  }
+};
+
+function toast(t) {
+  const e = $('#toast');
+
+  e.textContent = t;
+  e.style.display = 'block';
+
+  clearTimeout(e._t);
+
+  e._t = setTimeout(() => {
+    e.style.display = 'none';
+  }, 2600);
+}
+
+/* ---------- VISTAS ---------- */
+const myRes=()=>Object.keys(S).map(k=>{const[d,id]=k.split('|');return{d,id}}).sort((a,b)=>a.d.localeCompare(b.d));
+const sbox=(id,v)=>`<div class="sbox">${I('search')}<input class="in" id="${id}" placeholder="Buscar departamento..." value="${v}"></div>`;
+function depRows(){return Object.keys(D).filter(k=>D[k][0].toLowerCase().includes(Q.toLowerCase())).map(k=>{
+ const l=byD(k),r=stats(l),p=l.length?Math.round(used(r)/l.length*100):0;
+ return`<div class="dep ${SEL==k?'act':''}" data-d="${k}"><div class="r"><b><span class="dot" style="background:${D[k][1]}"></span>${D[k][0]}</b><b>${p}%</b></div>
+ <div class="r"><small>${used(r)} / ${l.length} puestos</small></div><div class="bar"><i style="width:${p}%;background:${D[k][1]}"></i></div></div>`}).join('')}
+function paintDeps(){const e=$('#deps');if(!e)return;e.innerHTML=depRows();e.querySelectorAll('.dep').forEach(d=>d.onclick=()=>pick(d.dataset.d))}
+const kpi=(ic,bg,fg,t,n,s)=>`<div class="card kpi"><div class="ic" style="background:${bg};color:${fg}">${I(ic,24)}</div><div><span>${t}</span><b>${n}</b><span>${s}</span></div></div>`;
+const V_={
+inicio(){const r=stats(),n=C.length,p=Math.round(used(r)/n*100),nx=myRes().filter(x=>x.d>=today())[0];
+ return`<div class="kpis">
+ ${kpi('chair','#dbeafe','#1d4ed8','Total de puestos',n,'Sillas habilitadas')}
+ ${kpi('check','#d1fae5','#059669','Disponibles',r.dis,'Puedes reservar ahora')}
+ ${kpi('cal','#fef3c7','#d97706','Reservados',r.res+r.mine,'Tienen una reserva activa')}
+ ${kpi('user','#fee2e2','#dc2626','Ocupados',r.ocu,'En uso actualmente')}</div>
+ <div class="grid"><div>${mapHTML()}<div class="card info"><div>${I('pin',24)}<div><b>Piso 9</b><span>Sede Principal</span></div></div><div>${I('building',24)}<div><b>6</b><span>Departamentos</span></div></div><div>${I('user',24)}<div><b>${n}</b><span>Total puestos</span></div></div><div>${I('clock',24)}<div><b>08:00 - 18:00</b><span>Horario de operación</span></div></div></div></div>
+ <div style="display:flex;flex-direction:column;gap:18px">
+ <div class="card donut"><div class="dn" style="background:conic-gradient(#22a06b ${p}%,#e8edf5 0)"><span>${p}%</span></div><div><b>% de ocupación</b><br><small style="color:var(--mu)">Ocupación del piso el ${fd(date)}</small></div></div>
+ <div class="card"><h3>Departamentos</h3>${sbox('q',Q)}<div id="deps">${depRows()}</div></div>
+ <div class="card"><h3>Mi próxima reserva</h3>${nx?`<div class="item"><div><b>${nx.id}</b><small>${D[nx.id.slice(0,2)][0]} · ${fd(nx.d)}</small></div></div>`:'<p style="color:var(--mu);margin-bottom:12px">No tienes reservas próximas. Busca un puesto y reserva tu lugar.</p>'}
+ <button class="btn p" style="width:100%;margin-top:12px" onclick="go('puesto')">${I('cal')}Buscar puesto</button></div></div></div>`},
+mapa(){return`<h2>Mapa de la oficina</h2>${mapHTML()}`},
+reservas(){const l=myRes();return`<h2>Mis reservas</h2><div class="card">${l.length?`<table><tr><th>Fecha</th><th>Puesto</th><th>Departamento</th><th></th></tr>${l.map(x=>`<tr><td>${fd(x.d)}</td><td><b>${x.id}</b></td><td>${D[x.id.slice(0,2)][0]}</td><td><button class="btn d" data-x="${x.d}|${x.id}">Cancelar</button></td></tr>`).join('')}</table>`:'<p>Aún no tienes reservas. Ve a <b>Buscar puesto</b> o al <b>Mapa</b>.</p>'}</div>`},
+puesto(){const f=window.FD||'';const l=C.filter(c=>st(c)==='dis'&&(!f||c.d===f));
+ return`<h2>Buscar puesto</h2><div class="card"><div class="tools"><select id="fd"><option value="">Todos los departamentos</option>${Object.keys(D).map(k=>`<option value="${k}" ${f==k?'selected':''}>${D[k][0]}</option>`).join('')}</select><b>${l.length} disponibles el ${fd(date)}</b></div>
+ <div class="list">${l.map(c=>`<div class="item"><div><b>${c.id}</b><small>${D[c.d][0]}</small></div><div style="display:flex;gap:6px"><button class="btn" data-m="${c.d}">Ver</button><button class="btn p" data-r="${c.id}">Reservar</button></div></div>`).join('')||'<p>No hay puestos disponibles.</p>'}</div></div>`},
+depto(){return`<h2>Buscar departamento</h2><div style="width:320px">${sbox('q2',Q)}</div><div class="list" style="margin-top:6px">${
+ Object.keys(D).filter(k=>D[k][0].toLowerCase().includes(Q.toLowerCase())).map(k=>{const l=byD(k),r=stats(l);
+ return`<div class="item click" data-m="${k}"><div><b><span class="dot" style="background:${D[k][1]}"></span>${D[k][0]}</b><small>${l.length?`${r.dis} libres de ${l.length} puestos`:'Sin puestos habilitados'}</small></div><span class="btn p">${I('map')}Ver en mapa</span></div>`}).join('')}</div>`},
+reportes(){const r=stats(),n=C.length;return`<h2>Reportes · ${fd(date)}</h2><div class="grid" style="grid-template-columns:1fr 1fr"><div class="card"><h3>Ocupación por departamento</h3>${Object.keys(D).filter(k=>byD(k).length).map(k=>{const l=byD(k),u=used(stats(l)),p=Math.round(u/l.length*100);
+ return`<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between"><span>${D[k][0]}</span><b>${u}/${l.length} · ${p}%</b></div><div class="bar" style="height:10px"><i style="width:${p}%;background:${D[k][1]}"></i></div></div>`}).join('')}</div>
+ <div class="card"><h3>Resumen del piso</h3><table>${['dis','res','ocu','mant','mine'].map(k=>`<tr><td><span class="dot" style="background:${ST[k][1]}"></span>${ST[k][0]}</td><td><b>${r[k]}</b></td><td>${Math.round(r[k]/n*100)}%</td></tr>`).join('')}<tr><td><b>Total</b></td><td><b>${n}</b></td><td></td></tr></table></div></div>`},
+config(){return`<h2>Configuración</h2><div class="card" style="max-width:420px"><p style="margin-bottom:6px">Nombre del empleado</p><input class="in" id="nm" value="${USER}" style="width:100%"><p style="margin:14px 0 6px">Horario de operación</p><input class="in" value="08:00 - 18:00" disabled style="width:100%"><div style="margin-top:16px;display:flex;gap:10px"><button class="btn p" id="sv">Guardar</button><button class="btn d" id="rs">Borrar mis reservas</button></div></div>`}};
+function go(v){location.hash=v}
+function render(keep){
+ const m=location.hash.slice(1);view=V_[m]?m:'inicio';
+ document.querySelectorAll('aside nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===view));
+ $('#view').innerHTML=V_[view]();$('#uname').textContent=USER;$('#av').textContent=USER[0]||'J';
+ initMap();
+ const q=$('#q');if(q)q.oninput=e=>{Q=e.target.value;paintDeps()};paintDeps();
+ const q2=$('#q2');if(q2)q2.oninput=e=>{Q=e.target.value;const p=q2.selectionStart;render();$('#q2').focus();$('#q2').setSelectionRange(p,p)};
+ document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{delete S[b.dataset.x];save();render()});
+ document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>openChair(b.dataset.r));
+ document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{SEL=b.dataset.m;go('mapa');if(view==='mapa')render()});
+ const f=$('#fd');if(f)f.onchange=e=>{window.FD=e.target.value;render()};
+ const sv=$('#sv');if(sv){sv.onclick=()=>{USER=$('#nm').value||USER;save();render();toast('Guardado')};$('#rs').onclick=()=>{if(confirm('¿Borrar todas tus reservas?')){S={};save();render()}}}}
+document.querySelectorAll('aside a').forEach(a=>a.onclick=()=>{SEL=null;go(a.dataset.v);if(location.hash.slice(1)===a.dataset.v)render()});
+$('#date').value=date;$('#date').min=today();$('#date').onchange=e=>{date=e.target.value||today();render()};
+window.onhashchange=()=>render();render();
+</script></body></html>
